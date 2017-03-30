@@ -24,6 +24,11 @@
 #include "RHD2000Editor.h"
 #include <cmath>
 #include "RHD2000Thread.h"
+#include <iostream>
+#include "cpp-subprocess/subprocess.hpp"
+
+
+using namespace subprocess;
 using namespace PCIeRhythm;
 
 #ifdef WIN32
@@ -671,7 +676,7 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
     ttlSettleLabel->setFont(Font("Small Text", 11, Font::plain));
     ttlSettleLabel->setBounds(255,80,100,20);
     ttlSettleLabel->setColour(Label::textColourId, Colours::darkgrey);
-    addAndMakeVisible(ttlSettleLabel);
+    // addAndMakeVisible(ttlSettleLabel);
 
 
     ttlSettleCombo = new ComboBox("FastSettleComboBox");
@@ -683,11 +688,11 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
         ttlSettleCombo->addItem("TTL"+String(1+k),2+k);
     }
     ttlSettleCombo->setSelectedId(1, sendNotification);
-    addAndMakeVisible(ttlSettleCombo);
+    // addAndMakeVisible(ttlSettleCombo);
 
     fifoBtn = new UtilityButton("RAM FIFO", Font("Small Text", 14, Font::plain));
     fifoBtn->setRadius(3.0f);
-    fifoBtn->setBounds(260,25,65,18);
+    fifoBtn->setBounds(260,25,65,50);
     fifoBtn->addListener(this);
     fifoBtn->setClickingTogglesState(true);
     fifoBtn->setTooltip("Enable/disable RAM FIFO FOR REAL TIME PROCESSING");
@@ -697,7 +702,7 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
     dacHPFlabel->setFont(Font("Small Text", 11, Font::plain));
     dacHPFlabel->setBounds(260,42,100,20);
     dacHPFlabel->setColour(Label::textColourId, Colours::darkgrey);
-    addAndMakeVisible(dacHPFlabel);
+    // addAndMakeVisible(dacHPFlabel);
 
     dacHPFcombo = new ComboBox("dacHPFCombo");
     dacHPFcombo->setBounds(260,60,60,18);
@@ -709,7 +714,7 @@ RHD2000Editor::RHD2000Editor(GenericProcessor* parentNode,
         dacHPFcombo->addItem(String(HPFvalues[k])+" Hz",2+k);
     }
     dacHPFcombo->setSelectedId(1, sendNotification);
-    addAndMakeVisible(dacHPFcombo);
+    // addAndMakeVisible(dacHPFcombo);
 
 }
 
@@ -848,7 +853,19 @@ void RHD2000Editor::buttonEvent(Button* button)
     else if (button == fifoBtn)
     {
 	printf("RAM FIFO State: %d\n", fifoBtn->getToggleState()); 
-	board->setXikeEnable(fifoBtn->getToggleState());
+	if(fifoBtn->getToggleState()){
+	    // Popen({"ls -l"});
+	    board->stopAcquisition();
+	    board->setXikeEnable(fifoBtn->getToggleState());
+	    Popen({"fifo", "5120000"}, input{"/dev/xillybus_mua_32"}, output{"./pcie.bin"});
+	    board->startAcquisition();
+	}
+	else{
+	    board->stopAcquisition();
+	    board->setXikeEnable(fifoBtn->getToggleState());
+	    if(acquisitionIsActive)
+		board->startAcquisition();
+	}
     }
     else if (button == dspoffsetButton && !acquisitionIsActive)
     {

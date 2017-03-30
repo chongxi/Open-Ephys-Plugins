@@ -208,6 +208,7 @@ void rhd2000PCIe::initialize()
 	setCableLengthFeet(PortD, 3.0);
 
 	setDspSettle(false);
+	xike_enable(true);
 
 	setDataSource(0, PortA1);
 	setDataSource(1, PortB1);

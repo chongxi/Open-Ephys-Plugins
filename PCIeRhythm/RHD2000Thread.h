@@ -106,6 +106,11 @@ namespace PCIeRhythm {
 		bool isAcquisitionActive();
 		bool isReady();
 
+
+		bool startAcquisition();
+		bool stopAcquisition();
+
+
 		int modifyChannelGain(int channel, float gain);
 		int modifyChannelName(int channel, String newName);
 		void getEventChannelNames(StringArray& Names);
@@ -185,9 +190,6 @@ namespace PCIeRhythm {
 		String libraryFilePath;
 
 		void timerCallback();
-
-		bool startAcquisition();
-		bool stopAcquisition();
 
 		bool openBoard();
 		void initializeBoard();
